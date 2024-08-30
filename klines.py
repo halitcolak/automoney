@@ -33,13 +33,13 @@ def message_handler(_, message):
     if not df.empty:
       last_row = df.iloc[-1]
       if last_row['xlong']:
-        place_order("BTCUSDT", 1, "BUY", kline["c"])
+        place_order("BTCUSDT", 1, "buy", kline["c"])
         print("Long sinyali tespit edildi")
       elif last_row['xshort']:
-        place_order("BTCUSDT", 1, "SELL", kline["c"])
+        place_order("BTCUSDT", 1, "sell", kline["c"])
         print("Short sinyali tespit edildi")
 
-    pprint.pprint(kline)
+    #pprint.pprint(kline)
 
 def on_open(ws):
   print('opened connection')

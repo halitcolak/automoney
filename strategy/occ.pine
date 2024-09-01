@@ -1,0 +1,54 @@
+//@version=3
+
+strategy(title = "Open Close Cross Strategy R5.1 revised by JustUncleL", shorttitle = "OCC Strategy R5.1", overlay = true, 
+  pyramiding = 0, default_qty_type = strategy.percent_of_equity, default_qty_value = 10, calc_on_every_tick=false)
+
+useRes      = true
+intRes      = 7
+stratRes    = ismonthly? tostring(interval*intRes,"###M") : isweekly? tostring(interval*intRes,"###W") : isdaily?  tostring(interval*intRes,"###D") : isintraday ? tostring(interval*intRes,"####") : '60'
+basisType   = "DEMA"
+basisLen    = 2
+offsetSigma = 6
+offsetALMA  = 0.85
+scolor      = false
+delayOffset = 0
+tradeType   = "BOTH"
+
+
+variant(type, src, len, offSig, offALMA) =>
+    v2 = ema(src, len)
+    v3 = 2 * v2 - ema(v2, len)
+    v4 = 3 * (v2 - ema(v2, len)) + ema(ema(v2, len), len)
+    type=="DEMA"?v3 : v4
+
+reso(exp, use, res) => use ? security(tickerid, res, exp, gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_on) : exp
+
+closeSeries     = variant(basisType, close[delayOffset], basisLen, offsetSigma, offsetALMA)
+openSeries      = variant(basisType, open[delayOffset], basisLen, offsetSigma, offsetALMA)
+
+closeSeriesAlt = reso(closeSeries, useRes, stratRes)
+openSeriesAlt = reso(openSeries, useRes, stratRes)
+
+xlong       = crossover(closeSeriesAlt, openSeriesAlt)
+xshort      = crossunder(closeSeriesAlt, openSeriesAlt)
+longCond    = xlong
+shortCond   = xshort
+
+slPoints    = 0
+tpPoints    = 0
+
+ebar            = 5000
+
+tdays       = (timenow-time)/60000.0
+tdays       := ismonthly? tdays/1440.0/5.0/4.3/interval : isweekly? tdays/1440.0/5.0/interval : isdaily? tdays/1440.0/interval : tdays/interval
+
+TP = tpPoints>0?tpPoints:na
+SL = slPoints>0?slPoints:na
+
+if ((ebar==0 or tdays<=ebar) and tradeType!="NONE")
+    strategy.entry("long", strategy.long, when=longCond==true and tradeType!="SHORT")
+    strategy.entry("short", strategy.short, when=shortCond==true and tradeType!="LONG")
+    strategy.close("long", when = shortCond==true and tradeType=="LONG")
+    strategy.close("short", when = longCond==true and tradeType=="SHORT")
+    strategy.exit("XL", from_entry = "long", profit = TP, loss = SL)
+    strategy.exit("XS", from_entry = "short", profit = TP, loss = SL)

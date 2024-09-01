@@ -1,5 +1,5 @@
 from binance.um_futures import UMFutures
-from order import place_order
+from order.order import place_order
 import logging
 import pandas as pd
 import numpy as np

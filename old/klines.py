@@ -9,8 +9,8 @@ from binance.lib.utils import config_logging
 from binance.websocket.um_futures.websocket_client import \
     UMFuturesWebsocketClient
 
-from order import place_order
-from strategy import calculate_strategy
+from order.order import place_order
+from strategy.strategy import calculate_strategy
 
 config_logging(logging, logging.DEBUG)
 data_queue = deque(maxlen=5000)

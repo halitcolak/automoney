@@ -9,9 +9,12 @@ from binance.lib.utils import config_logging
 from binance.um_futures import UMFutures
 from binance.websocket.um_futures.websocket_client import \
     UMFuturesWebsocketClient
+from close import on_close
+from open import on_open
+from process.order import place_order
+from process.initialize_data import place_order
 
-from new_strategy import apply_strategy
-from order import place_order
+from strategy.new_strategy import apply_strategy
 
 URL="https://testnet.binancefuture.com"
 first = True
@@ -63,12 +66,6 @@ def message_handler(_, message):
           place_order(kline["s"], 1, "buy", kline["c"])
         place_order(kline["s"], 1, "sell", kline["c"])
         first = True
-    
-def on_open(ws):
-  print('opened connection')
-
-def on_close(ws):
-  print('closed connection')
 
 def start_websocket(symbol, interval="5m"):
   my_client = UMFuturesWebsocketClient(
